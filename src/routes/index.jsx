@@ -57,7 +57,7 @@ const AppRoutes = () => {
         />
         <Route
           path="/resources"
-          element={<AppRoute component={ResourcesPage} isAuthProtected={true} path="/resources" />}
+          element={<AppRoute component={ResourcesPage} isAuthProtected={false} path="/resources" />}
         />
         <Route
           path="/support"
@@ -65,11 +65,11 @@ const AppRoutes = () => {
         />
         <Route
           path="/faq"
-          element={<AppRoute component={FAQPage} isAuthProtected={true} path="/faq" />}
+          element={<AppRoute component={FAQPage} isAuthProtected={false} path="/faq" />}
         />
         <Route
           path="/category/:type/:name"
-          element={<AppRoute component={CategoryViewPage} isAuthProtected={true} path="/category/:type/:name" />}
+          element={<AppRoute component={CategoryViewPage} isAuthProtected={false} path="/category/:type/:name" />}
         />
         
         <Route path="*" element={<AppRoute component={NotFoundPage} isAuthProtected={false} path="*" />} />
