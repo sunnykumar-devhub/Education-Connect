@@ -17,16 +17,15 @@ const LoginContainer = () => {
     e.preventDefault();
     setLoading(true);
     
-    // Simulate API call
     setTimeout(() => {
       setLoading(false);
+      localStorage.setItem("token", "ec_auth_token_v2");
       navigate('/portal');
     }, 1500);
   };
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Orbs */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#0f172a]/10 blur-[100px] rounded-full"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#3B82F6]/10 blur-[100px] rounded-full"></div>
 
@@ -118,7 +117,6 @@ const LoginContainer = () => {
         </div>
       </motion.div>
       
-      {/* Help Link */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-center">
         <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">
           New Student? <a href="#" className="text-[#0F172A] hover:underline">Contact Admissions</a>

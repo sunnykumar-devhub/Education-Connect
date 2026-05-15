@@ -13,7 +13,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { MATERIALS } from '../../data/materials';
+import { BOOKS } from '../../utils/books';
 
 const StudentPortalContainer = () => {
   // Mock student data
@@ -23,7 +23,7 @@ const StudentPortalContainer = () => {
     grade: "Class 10th-B",
     attendance: "94%",
     points: 1250,
-    recentBooks: MATERIALS.slice(0, 3)
+    recentBooks: BOOKS.slice(0, 3)
   };
 
   const stats = [

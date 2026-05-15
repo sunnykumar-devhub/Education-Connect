@@ -43,23 +43,35 @@
   }
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+/* Premium Global Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+::-webkit-scrollbar-track {
+  background: #f8fafc;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full;
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+  border: 2px solid #f8fafc;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-400;
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
-/* Page Transitions */
+/* Scrollbar Hide Utility */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 .fade-enter {
   opacity: 0;
   transform: translateY(10px);
@@ -70,7 +82,6 @@
   transition: opacity 300ms, transform 300ms;
 }
 
-/* Image Pulse Loading */
 .img-placeholder {
   @apply animate-pulse bg-slate-200;
 }
@@ -93,7 +104,6 @@
   }
 }
 
-/* Smooth Scrolling */
 html {
   scroll-behavior: smooth;
 }

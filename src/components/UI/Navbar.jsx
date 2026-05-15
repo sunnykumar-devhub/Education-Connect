@@ -49,17 +49,13 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ${
-      scrolled 
-        ? 'bg-[#0f172a]/80 backdrop-blur-xl border-b border-white/10 py-4' 
-        : 'bg-transparent py-6'
-    }`}>
+    <nav className="fixed top-0 left-0 w-full z-[100] bg-white border-b border-slate-200 py-4 shadow-sm backdrop-blur-md bg-white/95">
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
         <div className="flex justify-between items-center">
           {/* Logo Section */}
           <div className="flex items-center">
             <Link to="/" className="hover:opacity-90 transition-opacity">
-              <Logo variant="light" className="scale-90 sm:scale-100 origin-left" />
+              <Logo variant="dark" className="scale-90 sm:scale-100 origin-left" />
             </Link>
           </div>
 
@@ -71,24 +67,24 @@ const Navbar = () => {
                   <Link 
                     to={link.path} 
                     className={`text-sm font-semibold transition-colors duration-300 ${
-                      location.pathname === link.path ? 'text-[#3B82F6]' : 'text-slate-300 hover:text-white'
+                      location.pathname === link.path ? 'text-[#3B82F6]' : 'text-slate-700 hover:text-[#3B82F6]'
                     }`}
                   >
                     {link.name}
                   </Link>
                 ) : (
-                  <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-300 hover:text-white cursor-pointer group transition-colors duration-300">
+                  <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-[#3B82F6] cursor-pointer group transition-colors duration-300">
                     {link.name}
-                    <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-white group-hover:rotate-180 transition-all" />
+                    <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#3B82F6] group-hover:rotate-180 transition-all" />
                     
                     {/* Dropdown Menu */}
                     <div className="absolute top-[100%] left-0 w-56 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-                      <div className="bg-[#0f172a] border border-white/10 shadow-2xl rounded-2xl py-3 overflow-hidden backdrop-blur-2xl">
+                      <div className="bg-white border border-slate-200 shadow-2xl rounded-2xl py-3 overflow-hidden">
                         {link.items.map((item) => (
                           <Link
                             key={item}
                             to={`/category/${link.name.toLowerCase() === 'grades' ? 'grade' : 'subject'}/${item.toLowerCase().replace(/ /g, '-')}`}
-                            className="block px-6 py-2.5 text-xs text-slate-400 hover:bg-white/5 hover:text-[#3B82F6] font-bold uppercase tracking-wider transition-all"
+                            className="block px-6 py-2.5 text-xs text-slate-600 hover:bg-slate-50 hover:text-[#3B82F6] font-bold uppercase tracking-wider transition-all"
                           >
                             {item}
                           </Link>
@@ -103,9 +99,8 @@ const Navbar = () => {
             <div className="pl-6">
               <Link 
                 to="/login" 
-                className="group relative flex items-center gap-2 bg-[#3B82F6] text-white px-8 py-3.5 rounded-2xl font-bold text-sm transition-all hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:scale-105 active:scale-95 overflow-hidden"
+                className="group relative flex items-center gap-2 bg-[#3B82F6] text-white px-8 py-3.5 rounded-2xl font-bold text-sm transition-all hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 active:scale-95"
               >
-                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-12"></div>
                 <LogIn className="w-4 h-4" />
                 <span>Student Login</span>
               </Link>

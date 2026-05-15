@@ -1,127 +1,142 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Book, GraduationCap, Zap, BookOpen, ShieldCheck, Layers, ArrowRight, Star, Clock, User } from 'lucide-react';
+import { Book, GraduationCap, Zap, BookOpen, ShieldCheck, Layers, ArrowRight, Clock, User, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { MATERIALS } from '../../data/materials';
+import { BOOKS } from '../../utils/books';
 
 const ResourcesContainer = () => {
   const classes = [
-    { name: 'Class 1-5', icon: Book, color: 'bg-blue-500', theme: '#3B82F6' },
-    { name: 'Class 6-8', icon: Layers, color: 'bg-indigo-500', theme: '#6366F1' },
-    { name: 'Class 9', icon: GraduationCap, color: 'bg-emerald-500', theme: '#10B981' },
-    { name: 'Class 10', icon: Zap, color: 'bg-amber-500', theme: '#F59E0B' },
-    { name: 'Class 11', icon: BookOpen, color: 'bg-purple-500', theme: '#8B5CF6' },
-    { name: 'Class 12', icon: ShieldCheck, color: 'bg-rose-500', theme: '#F43F5E' }
+    { name: 'Class 1-5', icon: Book, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { name: 'Class 6-8', icon: Layers, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    { name: 'Class 9', icon: GraduationCap, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { name: 'Class 10', icon: Zap, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { name: 'Class 11', icon: BookOpen, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { name: 'Class 12', icon: ShieldCheck, color: 'text-rose-600', bg: 'bg-rose-50' }
   ];
 
+  const toTitleCase = (str) => {
+    return str.toLowerCase().split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 pt-24 sm:pt-32 pb-20 px-4">
+    <div className="min-h-screen bg-slate-50 pt-24 sm:pt-32 pb-32 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12 sm:mb-20">
-          <motion.span 
+        
+        {/* Header Section */}
+        <div className="mb-20">
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-block bg-[#3B82F6]/10 text-[#3B82F6] text-[8px] sm:text-[10px] font-black px-3 sm:px-4 py-1.5 sm:py-2 rounded-full uppercase tracking-widest mb-4"
+            className="flex flex-col gap-4"
           >
-            Academic Library
-          </motion.span>
-          <motion.h1 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-3xl sm:text-4xl md:text-6xl font-black text-[#0f172a] uppercase tracking-tighter mb-4 sm:mb-6"
-          >
-            Class-wise <span className="text-[#3B82F6]">Resources</span>
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-slate-400 font-medium max-w-2xl mx-auto text-base sm:text-lg px-4"
-          >
-            Access curated study materials, interactive textbooks, and research papers organized by grade level.
-          </motion.p>
+            <span className="inline-block w-fit bg-blue-600 text-white text-[9px] font-black px-4 py-1.5 rounded-full uppercase tracking-[0.2em]">
+              Resource Repository
+            </span>
+            <h1 className="text-4xl sm:text-6xl font-black text-[#0f172a] uppercase tracking-tighter">
+              Academic <span className="text-blue-600">Vault</span>
+            </h1>
+            <p className="text-slate-400 font-medium max-w-2xl text-base sm:text-lg">
+              Curated study materials and interactive textbooks organized by academic grade level for a focused learning experience.
+            </p>
+          </motion.div>
         </div>
 
-        {/* Classes Grid */}
-        <div className="space-y-16 sm:space-y-24">
+        {/* Sectioned Rows Layout */}
+        <div className="space-y-24 sm:space-y-32">
           {classes.map((cls, idx) => {
-            const classMaterials = MATERIALS.filter(m => m.grade === cls.name).slice(0, 4);
+            const classMaterials = BOOKS.filter(m => m.grade === cls.name).slice(0, 4);
             
             return (
-              <motion.div 
-                key={cls.name}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="relative"
-              >
-                <div className="flex flex-col lg:flex-row gap-8 sm:gap-12 items-start">
-                  {/* Class Info Sidebar */}
-                  <div className="w-full lg:w-1/4 lg:sticky lg:top-32">
-                    <div className="bg-white p-8 sm:p-10 rounded-[2rem] sm:rounded-[3rem] shadow-xl border border-slate-100">
-                      <div className={`${cls.color} w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center mb-6 shadow-2xl`}>
-                        <cls.icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                      </div>
-                      <h2 className="text-2xl sm:text-3xl font-black text-[#0f172a] uppercase tracking-tighter mb-3 sm:mb-4">{cls.name}</h2>
-                      <p className="text-slate-400 text-xs sm:text-sm font-medium mb-6 sm:mb-8">Comprehensive digital vault for {cls.name} students.</p>
+              <div key={cls.name} className="flex flex-col lg:flex-row gap-10 xl:gap-16">
+                
+                {/* Left Side: Class Header (25%) */}
+                <div className="w-full lg:w-1/4 lg:sticky lg:top-32 h-fit">
+                  <div className="flex flex-col gap-6">
+                    <div className={`${cls.bg} ${cls.color} w-16 h-16 rounded-2xl flex items-center justify-center shadow-sm border border-slate-100`}>
+                      <cls.icon className="w-8 h-8" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl sm:text-3xl font-black text-[#0f172a] uppercase tracking-tight mb-2">
+                        {cls.name}
+                      </h2>
+                      <p className="text-slate-400 text-sm font-medium mb-6 leading-relaxed">
+                        Comprehensive resources specifically curated for {cls.name} curriculum.
+                      </p>
                       <Link 
                         to={`/category/grade/${cls.name.toLowerCase().replace(/ /g, '-')}`}
-                        className="flex items-center justify-center gap-2 bg-[#0f172a] text-white py-3.5 sm:py-4 rounded-xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest hover:bg-[#3B82F6] transition-all shadow-xl active:scale-95"
+                        className={`inline-flex items-center gap-2 font-black uppercase text-[10px] tracking-widest transition-all hover:gap-4 ${cls.color}`}
                       >
-                        Enter Full Vault <ArrowRight className="w-4 h-4" />
+                        View All Materials <ArrowRight className="w-4 h-4" />
                       </Link>
                     </div>
                   </div>
+                </div>
 
-                  {/* Materials Preview */}
-                  <div className="w-full lg:w-3/4 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+                {/* Right Side: Resource Grid (75%) */}
+                <div className="w-full lg:w-3/4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                     {classMaterials.map((book) => (
-                      <Link 
-                        to={`/read/${book.id}`}
+                      <motion.div
                         key={book.id}
-                        className="group bg-white rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-lg hover:shadow-2xl transition-all flex flex-col sm:flex-row h-auto sm:h-48"
+                        whileHover={{ y: -5 }}
+                        className="group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-slate-200 transition-all duration-300 flex h-44 sm:h-48"
                       >
-                        <div className="w-full sm:w-1/3 h-40 sm:h-full relative overflow-hidden">
-                          <img src={book.cover} alt={book.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                          <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
-                        </div>
-                        <div className="w-full sm:w-2/3 p-5 sm:p-6 flex flex-col justify-between">
-                          <div>
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-[7px] sm:text-[8px] font-black text-[#3B82F6] uppercase tracking-widest bg-[#3B82F6]/5 px-2 py-1 rounded-md">{book.subject}</span>
-                            </div>
-                            <h3 className="text-base sm:text-lg font-black text-[#0f172a] line-clamp-1 group-hover:text-[#3B82F6] transition-colors uppercase tracking-tight">{book.title}</h3>
-                            <p className="text-slate-400 text-[10px] sm:text-xs font-medium line-clamp-2 mt-1 sm:mt-2">{book.description}</p>
-                          </div>
-                          <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-slate-50 mt-4 sm:mt-0">
-                            <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                              <User className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#3B82F6]" />
-                              {book.author}
-                            </div>
-                            <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                              <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                              12m read
-                            </div>
-                            <div className="flex items-center gap-1 text-amber-500">
-                              <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" />
-                              <span className="text-[9px] sm:text-[10px] font-black">4.9</span>
-                            </div>
+                        {/* Card Image */}
+                        <div className="w-1/3 h-full relative overflow-hidden bg-slate-100">
+                          <img 
+                            src={book.cover} 
+                            alt={book.title} 
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                          />
+                          <div className="absolute top-2 left-2 z-10">
+                            <span className="bg-white/90 backdrop-blur-sm text-[#0f172a] text-[7px] font-black px-2 py-1 rounded-md uppercase tracking-wider shadow-sm border border-slate-100">
+                              {book.subject}
+                            </span>
                           </div>
                         </div>
-                      </Link>
+
+                        {/* Card Content */}
+                        <div className="w-2/3 p-5 sm:p-6 flex flex-col justify-between">
+                          <div className="space-y-1.5">
+                            <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight line-clamp-2 group-hover:text-blue-600 transition-colors">
+                              {toTitleCase(book.title)}
+                            </h3>
+                            <div className="flex items-center gap-2 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                              <User className="w-3 h-3" />
+                              <span className="truncate">{book.author}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-1 text-slate-400 text-[10px] font-bold uppercase">
+                                <Clock className="w-3 h-3" />
+                                <span>12m</span>
+                              </div>
+                              <div className="flex items-center gap-1 text-amber-500 text-[10px] font-bold">
+                                <Star className="w-3 h-3 fill-current" />
+                                <span>4.9</span>
+                              </div>
+                            </div>
+                            <Link to={`/read/${book.id}`} className="text-slate-300 group-hover:text-blue-600 transition-colors">
+                                <ArrowRight className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                          </div>
+                        </div>
+                      </motion.div>
                     ))}
+                    
                     {classMaterials.length === 0 && (
-                      <div className="col-span-full py-16 sm:py-20 bg-white/50 rounded-[2rem] sm:rounded-[3rem] border-4 border-dashed border-slate-100 flex flex-col items-center justify-center">
-                        <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 text-slate-200 mb-4" />
-                        <p className="text-slate-400 font-black uppercase text-[10px] sm:text-xs tracking-widest">Coming Soon</p>
+                      <div className="col-span-full py-16 bg-white rounded-2xl border border-slate-200 border-dashed flex flex-col items-center justify-center text-slate-300">
+                        <BookOpen className="w-10 h-10 mb-4 opacity-20" />
+                        <p className="font-black uppercase text-[10px] tracking-widest">Repository Updating...</p>
                       </div>
                     )}
                   </div>
                 </div>
-              </motion.div>
+              </div>
             );
           })}
         </div>
