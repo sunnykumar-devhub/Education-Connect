@@ -3,7 +3,6 @@ import { Routes, Route, Outlet } from "react-router-dom";
 import AppRoute from "./route";
 import Layout from "../containers/Layout";
 
-// Page Imports
 const HomePage = lazy(() => import("../pages/HomePage"));
 const ReaderPage = lazy(() => import("../pages/ReaderPage"));
 const ResourcesPage = lazy(() => import("../pages/ResourcesPage"));
@@ -15,23 +14,7 @@ const LoginPage = lazy(() => import("../pages/LoginPage"));
 const HelpCenterPage = lazy(() => import("../pages/HelpCenterPage"));
 const PrivacyPolicyPage = lazy(() => import("../pages/PrivacyPolicyPage"));
 const TermsOfServicePage = lazy(() => import("../pages/TermsOfServicePage"));
-
-const publicRoutes = [
-  { path: "/", exact: true, component: HomePage },
-  { path: "/login", exact: true, component: LoginPage },
-  { path: "/help", exact: true, component: HelpCenterPage },
-  { path: "/privacy", exact: true, component: PrivacyPolicyPage },
-  { path: "/terms", exact: true, component: TermsOfServicePage },
-];
-
-const privateRoutes = [
-  { path: "/portal", exact: true, component: StudentPortalPage },
-  { path: "/read/:id", exact: true, component: ReaderPage },
-  { path: "/resources", exact: true, component: ResourcesPage },
-  { path: "/support", exact: true, component: SupportPage },
-  { path: "/faq", exact: true, component: FAQPage },
-  { path: "/category/:type/:name", exact: true, component: CategoryViewPage },
-];
+const NotFoundPage = lazy(() => import("../pages/NotFoundPage"));
 
 const LayoutWrapper = () => (
   <Layout>
@@ -42,61 +25,55 @@ const LayoutWrapper = () => (
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Routes WITHOUT Layout (Full Screen) */}
       <Route
         path="/login"
-        element={<AppRoute component={LoginPage} isAuthProtected={false} />}
+        element={<AppRoute component={LoginPage} isAuthProtected={false} path="/login" />}
       />
-      <Route
-        path="/read/:id"
-        element={<AppRoute component={ReaderPage} isAuthProtected={true} />}
-      />
-
-      {/* Routes WITH Layout */}
       <Route element={<LayoutWrapper />}>
-        {/* Public with Layout */}
         <Route
           path="/"
-          element={<AppRoute component={HomePage} isAuthProtected={false} />}
+          element={<AppRoute component={HomePage} isAuthProtected={false} path="/" />}
+        />
+        <Route
+          path="/read/:id"
+          element={<AppRoute component={ReaderPage} isAuthProtected={true} path="/read/:id" />}
         />
         <Route
           path="/help"
-          element={<AppRoute component={HelpCenterPage} isAuthProtected={false} />}
+          element={<AppRoute component={HelpCenterPage} isAuthProtected={false} path="/help" />}
         />
         <Route
           path="/privacy"
-          element={<AppRoute component={PrivacyPolicyPage} isAuthProtected={false} />}
+          element={<AppRoute component={PrivacyPolicyPage} isAuthProtected={false} path="/privacy" />}
         />
         <Route
           path="/terms"
-          element={<AppRoute component={TermsOfServicePage} isAuthProtected={false} />}
+          element={<AppRoute component={TermsOfServicePage} isAuthProtected={false} path="/terms" />}
         />
 
-        {/* Private with Layout */}
         <Route
           path="/portal"
-          element={<AppRoute component={StudentPortalPage} isAuthProtected={true} />}
+          element={<AppRoute component={StudentPortalPage} isAuthProtected={true} path="/portal" />}
         />
         <Route
           path="/resources"
-          element={<AppRoute component={ResourcesPage} isAuthProtected={true} />}
+          element={<AppRoute component={ResourcesPage} isAuthProtected={true} path="/resources" />}
         />
         <Route
           path="/support"
-          element={<AppRoute component={SupportPage} isAuthProtected={true} />}
+          element={<AppRoute component={SupportPage} isAuthProtected={true} path="/support" />}
         />
         <Route
           path="/faq"
-          element={<AppRoute component={FAQPage} isAuthProtected={true} />}
+          element={<AppRoute component={FAQPage} isAuthProtected={true} path="/faq" />}
         />
         <Route
           path="/category/:type/:name"
-          element={<AppRoute component={CategoryViewPage} isAuthProtected={true} />}
+          element={<AppRoute component={CategoryViewPage} isAuthProtected={true} path="/category/:type/:name" />}
         />
+        
+        <Route path="*" element={<AppRoute component={NotFoundPage} isAuthProtected={false} path="*" />} />
       </Route>
-
-      {/* Fallback */}
-      <Route path="*" element={<HomePage />} />
     </Routes>
   );
 };

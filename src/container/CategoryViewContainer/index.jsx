@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { BookOpen, ChevronRight, GraduationCap, Filter } from 'lucide-react';
-import { MATERIALS } from '../../data/materials';
+import { BOOKS } from '../../utils/books';
 import BookCard from '../../components/BookCard';
 
 const CategoryViewContainer = () => {
@@ -10,7 +10,7 @@ const CategoryViewContainer = () => {
   
   const filteredMaterials = useMemo(() => {
     const searchName = name.replace(/-/g, ' ');
-    return MATERIALS.filter(m => {
+    return BOOKS.filter(m => {
       if (type === 'grade') return m.grade.toLowerCase().includes(searchName.toLowerCase());
       if (type === 'subject') return m.subject.toLowerCase() === searchName.toLowerCase();
       return true;
