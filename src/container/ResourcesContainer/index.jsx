@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Book, GraduationCap, Zap, BookOpen, ShieldCheck, Layers, ArrowRight, Clock, User, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { BOOKS } from '../../utils/books';
+import Breadcrumb from '../../components/UI/Breadcrumb';
 
 const ResourcesContainer = () => {
   const classes = [
@@ -23,6 +24,7 @@ const ResourcesContainer = () => {
   return (
     <div className="min-h-screen bg-slate-50 pt-24 sm:pt-32 pb-32 px-4">
       <div className="max-w-7xl mx-auto">
+        <Breadcrumb items={[{ label: 'Resources' }]} />
         
         {/* Header Section */}
         <div className="mb-20">
