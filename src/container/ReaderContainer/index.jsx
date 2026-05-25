@@ -27,7 +27,7 @@ const ReaderContainer = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
-  const isLocked = currentPage >= 4;
+  const isLocked = false;
 
   if (!book) {
     return (
@@ -47,7 +47,7 @@ const ReaderContainer = () => {
   }
 
   const handleNext = () => {
-    if (currentPage < 4) {
+    if (currentPage < book.chapters.length) {
       setCurrentPage(prev => prev + 1);
     }
   };
@@ -91,7 +91,7 @@ const ReaderContainer = () => {
             Contents
           </div>
           {book.chapters.map((chapter, idx) => {
-            const chapterLocked = idx >= 3;
+            const chapterLocked = false;
             return (
               <button 
                 key={chapter.id}

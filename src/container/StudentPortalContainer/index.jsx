@@ -61,10 +61,10 @@ const StudentPortalContainer = () => {
               <Settings className="w-4 h-4" />
               Settings
             </button>
-            <button className="bg-[#3B82F6] hover:bg-blue-600 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg flex items-center gap-2">
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
+            <Link to="/" className="bg-[#3B82F6] hover:bg-blue-600 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg flex items-center gap-2">
+              <Book className="w-4 h-4" />
+              Library Catalog
+            </Link>
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, UserCheck, Shield, HelpCircle, FileText, ArrowRight, Play } from 'lucide-react';
+import VideoPlayer from '../../components/UI/VideoPlayer';
 
 const HelpCenterContainer = () => {
   const guides = [
@@ -75,17 +76,11 @@ const HelpCenterContainer = () => {
                     ))}
                  </ul>
               </div>
-              <div className="bg-slate-200 relative group cursor-pointer">
-                 <img 
-                    src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop" 
-                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
-                    alt="Video Tutorial"
+              <div className="p-4 sm:p-12 flex items-center justify-center bg-slate-950">
+                 <VideoPlayer 
+                    videoSrc="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4" 
+                    thumbnail="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop" 
                  />
-                 <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-24 h-24 bg-[#0F172A] rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all border-8 border-white/20">
-                       <Play className="w-8 h-8 text-white fill-white ml-1" />
-                    </div>
-                 </div>
               </div>
            </div>
         </div>

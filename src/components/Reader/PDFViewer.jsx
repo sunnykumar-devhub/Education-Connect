@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -11,9 +11,25 @@ const PDFViewer = ({ fileUrl, pageNumber, setPageNumber }) => {
   const [numPages, setNumPages] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [scale, setScale] = useState(1.2);
+  const [scale, setScale] = useState(() => {
+    if (window.innerWidth < 640) return 0.55;
+    if (window.innerWidth < 1024) return 0.85;
+    return 1.15;
+  });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef(null);
+
+  // Dynamic responsive scaling based on viewport width
+  useEffect(() => {
+    const handleResize = () => {
+      if (document.fullscreenElement) return;
+      if (window.innerWidth < 640) setScale(0.55);
+      else if (window.innerWidth < 1024) setScale(0.85);
+      else setScale(1.15);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const onDocumentLoadSuccess = useCallback(({ numPages }) => {
     setNumPages(numPages);
