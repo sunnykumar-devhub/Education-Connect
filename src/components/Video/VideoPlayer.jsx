@@ -1,380 +1,416 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Play, 
-  Pause, 
-  Volume2, 
-  VolumeX, 
-  RotateCcw, 
-  Settings, 
-  Maximize, 
-  Minimize, 
-  Loader2, 
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
   AlertCircle,
-  ExternalLink
+  Captions,
+  Loader2,
+  Maximize,
+  Minimize,
+  Minimize2,
+  Pause,
+  PictureInPicture2,
+  Play,
+  RotateCcw,
+  SkipBack,
+  SkipForward,
+  Volume2,
+  VolumeX,
+  X,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  getGoogleDriveEmbedUrl, 
-  isGoogleDriveUrl, 
-  getVideoProgressTime, 
-  saveVideoProgressTime 
+import { AnimatePresence, motion } from 'framer-motion';
+import { PLAYBACK_SPEEDS, QUALITY_OPTIONS } from './constants/videoConfig';
+import {
+  buildGoogleDrivePreviewUrl,
+  filterSourcesByQuality,
+  isGoogleDriveUrl,
+  normalizeVideoSources,
+  saveWatchHistory,
 } from '../../utils/videoUtils';
+import { useVideoProgress } from './hooks/useVideoProgress';
 
-const VideoPlayer = ({ videoSrc, thumbnail, videoId = 'lecture_video', title = 'Lecture Video' }) => {
-  const videoRef = useRef(null);
+const format = (value) => {
+  const m = Math.floor(value / 60);
+  const s = Math.floor(value % 60);
+  return `${m}:${s < 10 ? '0' : ''}${s}`;
+};
+
+const VideoPlayer = ({
+  videoSrc,
+  videoSources = [],
+  thumbnail,
+  videoId = 'lecture_video',
+  title = 'Lecture Video',
+  onNext,
+  autoplayNext = false,
+  subtitles = [],
+  originalUrl,
+}) => {
   const containerRef = useRef(null);
-
-  const isDriveVideo = isGoogleDriveUrl(videoSrc);
-  const driveEmbedUrl = isDriveVideo ? getGoogleDriveEmbedUrl(videoSrc) : null;
+  const videoRef = useRef(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(0.8);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(0.8);
-  const [isMuted, setIsMuted] = useState(false);
-  const [playbackRate, setPlaybackRate] = useState(1);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [showControls, setShowControls] = useState(true);
-  const [isHovered, setIsHovered] = useState(false);
-  const [loadError, setLoadError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isMini, setIsMini] = useState(false);
+  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('Unable to play this video source in-app.');
+  const [subtitlesEnabled, setSubtitlesEnabled] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [quality, setQuality] = useState('auto');
+  const [sourceIndex, setSourceIndex] = useState(0);
+  const [compatMode, setCompatMode] = useState(false);
 
-  // Resume progress from localStorage
+  const allSources = useMemo(
+    () => normalizeVideoSources(videoSrc, videoSources),
+    [videoSrc, videoSources]
+  );
+
+  const sourcePool = useMemo(
+    () => filterSourcesByQuality(allSources, quality),
+    [allSources, quality]
+  );
+
+  const activeSource = sourcePool[sourceIndex]?.src || allSources[sourceIndex]?.src || '';
+  const hasDriveSource = Boolean(originalUrl && isGoogleDriveUrl(originalUrl));
+  const drivePreviewUrl = hasDriveSource ? buildGoogleDrivePreviewUrl(originalUrl) : '';
+
+  const { initialTime } = useVideoProgress(videoId, duration, currentTime, isPlaying);
+
   useEffect(() => {
-    if (!isDriveVideo && videoRef.current) {
-      const savedTime = getVideoProgressTime(videoId);
-      if (savedTime > 0) {
-        videoRef.current.currentTime = savedTime;
-        setCurrentTime(savedTime);
+    setSourceIndex(0);
+    setError(false);
+    setErrorMessage('Unable to play this video source in-app.');
+    setIsLoading(true);
+    setIsBuffering(false);
+    setCurrentTime(0);
+    setDuration(0);
+    setCompatMode(false);
+  }, [videoId, quality, videoSrc, videoSources]);
+
+  useEffect(() => {
+    if (!videoRef.current) return;
+    videoRef.current.currentTime = initialTime || 0;
+    setCurrentTime(initialTime || 0);
+  }, [initialTime, activeSource]);
+
+  useEffect(() => {
+    const onFullscreen = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener('fullscreenchange', onFullscreen);
+    return () => document.removeEventListener('fullscreenchange', onFullscreen);
+  }, []);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    const timeout = window.setTimeout(() => setShowControls(false), 2200);
+    return () => window.clearTimeout(timeout);
+  }, [isPlaying, currentTime]);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      const tag = e.target?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+      if (e.code === 'Space' || e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        handlePlayPause();
       }
-    }
-  }, [videoId, isDriveVideo]);
+      if (e.key === 'ArrowRight') seek(10);
+      if (e.key === 'ArrowLeft') seek(-10);
+      if (e.key.toLowerCase() === 'm') toggleMute();
+      if (e.key.toLowerCase() === 'f') toggleFullscreen();
+      if (e.key.toLowerCase() === 'n' && onNext) onNext();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
 
-  // Periodic progress saving (HTML5 video only)
   useEffect(() => {
-    if (!isDriveVideo && isPlaying) {
-      const interval = setInterval(() => {
-        if (videoRef.current) {
-          saveVideoProgressTime(videoId, videoRef.current.currentTime);
-        }
-      }, 3000);
-      return () => clearInterval(interval);
+    if (!videoRef.current) return;
+    const tracks = videoRef.current.textTracks;
+    for (let i = 0; i < tracks.length; i += 1) {
+      tracks[i].mode = subtitlesEnabled ? 'showing' : 'disabled';
     }
-  }, [isPlaying, videoId, isDriveVideo]);
+  }, [subtitlesEnabled]);
 
-  // Controls auto-hide timer
-  useEffect(() => {
-    let timeout;
-    if (isPlaying && isHovered && !isDriveVideo) {
-      timeout = setTimeout(() => {
-        setShowControls(false);
-      }, 3000);
-    }
-    return () => clearTimeout(timeout);
-  }, [isPlaying, isHovered, currentTime, isDriveVideo]);
+  const toggleFullscreen = async () => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) await containerRef.current.requestFullscreen();
+    else await document.exitFullscreen();
+  };
 
   const handlePlayPause = () => {
-    if (isDriveVideo) return; // handled by drive player
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        videoRef.current.play().catch(err => {
-          console.error('Play failed:', err);
-          setLoadError(true);
-        });
-        setIsPlaying(true);
-      }
-      setShowControls(true);
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      v.play().then(() => setIsPlaying(true)).catch(() => setError(true));
+    } else {
+      v.pause();
+      setIsPlaying(false);
     }
+    setShowControls(true);
   };
 
-  const handleTimeUpdate = () => {
-    if (videoRef.current) {
-      setCurrentTime(videoRef.current.currentTime);
-    }
-  };
-
-  const handleLoadedMetadata = () => {
-    if (videoRef.current) {
-      setDuration(videoRef.current.duration);
-      setIsLoading(false);
-    }
-  };
-
-  const handleProgressScrub = (e) => {
-    if (videoRef.current && duration > 0) {
-      const scrubTime = parseFloat(e.target.value);
-      videoRef.current.currentTime = scrubTime;
-      setCurrentTime(scrubTime);
-    }
-  };
-
-  const handleVolumeChange = (e) => {
-    const newVol = parseFloat(e.target.value);
-    setVolume(newVol);
-    if (videoRef.current) {
-      videoRef.current.volume = newVol;
-      videoRef.current.muted = newVol === 0;
-    }
-    setIsMuted(newVol === 0);
+  const seek = (delta) => {
+    if (!videoRef.current) return;
+    const next = Math.min(Math.max(0, videoRef.current.currentTime + delta), duration || 0);
+    videoRef.current.currentTime = next;
+    setCurrentTime(next);
   };
 
   const toggleMute = () => {
-    if (videoRef.current) {
-      const newMuted = !isMuted;
-      videoRef.current.muted = newMuted;
-      setIsMuted(newMuted);
-      if (newMuted) {
-        videoRef.current.volume = 0;
-      } else {
-        videoRef.current.volume = volume > 0 ? volume : 0.5;
-        if (volume === 0) setVolume(0.5);
-      }
+    if (!videoRef.current) return;
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    videoRef.current.muted = nextMuted;
+    if (!nextMuted && volume === 0) {
+      const restored = 0.6;
+      setVolume(restored);
+      videoRef.current.volume = restored;
     }
   };
 
-  const handleSpeedChange = (rate) => {
-    setPlaybackRate(rate);
-    if (videoRef.current) {
-      videoRef.current.playbackRate = rate;
-    }
+  const retryFromStart = () => {
+    setError(false);
+    setErrorMessage('Unable to play this video source in-app.');
+    setSourceIndex(0);
+    setIsLoading(true);
+    setIsBuffering(false);
   };
 
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen()
-        .then(() => setIsFullscreen(true))
-        .catch(err => console.error('Fullscreen Error:', err));
-    } else {
-      document.exitFullscreen()
-        .then(() => setIsFullscreen(false));
-    }
-  };
-
-  useEffect(() => {
-    const onFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-    document.addEventListener('fullscreenchange', onFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
-  }, []);
-
-  const formatTime = (secs) => {
-    const m = Math.floor(secs / 60);
-    const s = Math.floor(secs % 60);
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
-  };
+  const miniClasses = isMini && !isFullscreen
+    ? 'fixed bottom-4 right-4 z-[160] w-[min(94vw,420px)] shadow-2xl'
+    : 'w-full';
 
   return (
-    <div 
-      ref={containerRef}
-      onMouseEnter={() => {
-        setIsHovered(true);
-        setShowControls(true);
-      }}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        if (isPlaying) setShowControls(false);
-      }}
-      className={`relative w-full rounded-[2rem] overflow-hidden bg-slate-950 border border-slate-900 shadow-2xl transition-all aspect-video select-none ${
-        isFullscreen ? 'h-screen w-screen rounded-none border-none' : ''
-      }`}
-    >
-      {isDriveVideo ? (
-        /* GOOGLE DRIVE VIDEO IFRAME PLAYER */
-        <div className="w-full h-full relative">
-          {isLoading && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0f172a] z-30">
-              <Loader2 className="w-12 h-12 text-[#3B82F6] animate-spin mb-4" />
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 animate-pulse">
-                Loading Google Drive Resource...
-              </p>
-            </div>
-          )}
-          <iframe
-            src={driveEmbedUrl}
-            onLoad={() => setIsLoading(false)}
-            onError={() => {
-              setLoadError(true);
-              setIsLoading(false);
+    <div className={miniClasses}>
+      <div
+        ref={containerRef}
+        className="group relative flex w-full flex-col justify-center overflow-hidden rounded-2xl border border-slate-800 bg-black shadow-2xl transition-all"
+        style={{ aspectRatio: '16/9', maxHeight: '85vh' }}
+        onMouseMove={() => setShowControls(true)}
+      >
+        {!compatMode ? (
+          <video
+            key={activeSource}
+            ref={videoRef}
+            src={activeSource}
+            poster={thumbnail}
+            className="h-full w-full object-contain"
+            playsInline
+            preload="metadata"
+            referrerPolicy="no-referrer"
+            onClick={handlePlayPause}
+            onTimeUpdate={() => {
+              if (!videoRef.current) return;
+              const now = videoRef.current.currentTime;
+              setCurrentTime(now);
+              saveWatchHistory(videoId, now, duration);
+              if (autoplayNext && onNext && duration > 0 && now >= duration - 0.5) onNext();
             }}
-            className="w-full h-full object-cover"
+            onLoadedMetadata={() => {
+              setDuration(videoRef.current?.duration || 0);
+              setIsLoading(false);
+              setError(false);
+            }}
+            onWaiting={() => {
+              setIsBuffering(true);
+              setIsLoading(true);
+            }}
+            onPlaying={() => {
+              setIsLoading(false);
+              setIsBuffering(false);
+              setIsPlaying(true);
+            }}
+            onPause={() => setIsPlaying(false)}
+            onError={() => {
+              if (sourceIndex < sourcePool.length - 1) {
+                setSourceIndex((prev) => prev + 1);
+                setIsLoading(true);
+                setIsBuffering(false);
+                return;
+              }
+              if (drivePreviewUrl) {
+                setCompatMode(true);
+                setError(false);
+                setIsLoading(false);
+                setIsBuffering(false);
+                return;
+              }
+              setError(true);
+              setIsLoading(false);
+              setIsBuffering(false);
+              setErrorMessage('Playback failed for all available sources. Please retry or use a verified CDN stream.');
+            }}
+          >
+            {subtitles.map((track) => (
+              <track key={track.src} kind="subtitles" srcLang={track.lang} label={track.label} src={track.src} />
+            ))}
+          </video>
+        ) : (
+          <iframe
+            src={drivePreviewUrl}
+            title={title}
+            className="h-full w-full border-none"
             allow="autoplay; fullscreen"
             allowFullScreen
-            title={title}
           />
-          {/* Bezel Title Overlay */}
-          <div className="absolute top-4 left-4 bg-slate-950/80 backdrop-blur-md px-4 py-2 rounded-xl text-white border border-white/5 flex items-center gap-2 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-            <span className="text-[10px] font-black uppercase tracking-widest text-[#3B82F6]">Drive Stream</span>
-            <span className="text-xs font-bold">{title}</span>
-          </div>
-        </div>
-      ) : (
-        /* NATIVE CUSTOM HTML5 PLAYER */
-        <div className="w-full h-full relative">
-          <video
-            ref={videoRef}
-            src={videoSrc}
-            poster={thumbnail}
-            onClick={handlePlayPause}
-            onTimeUpdate={handleTimeUpdate}
-            onLoadedMetadata={handleLoadedMetadata}
-            onWaiting={() => setIsLoading(true)}
-            onPlaying={() => setIsLoading(false)}
-            onError={() => {
-              setLoadError(true);
-              setIsLoading(false);
-            }}
-            className="w-full h-full object-cover cursor-pointer"
-            playsInline
-          />
+        )}
 
-          {/* Buffering Indicator */}
-          {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-30 pointer-events-none">
-              <Loader2 className="w-12 h-12 text-[#3B82F6] animate-spin" />
-            </div>
+        {(isLoading || isBuffering) && (
+          <div className="absolute inset-0 z-20 grid place-items-center bg-slate-950/65">
+            <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
+          </div>
+        )}
+
+        <AnimatePresence>
+          {!compatMode && !isPlaying && !isLoading && !error && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handlePlayPause}
+              className="absolute inset-0 z-20 grid place-items-center bg-slate-950/40"
+              aria-label="Play"
+            >
+              <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-white text-blue-600 shadow-xl">
+                <Play className="h-6 w-6 fill-current" />
+              </span>
+            </motion.button>
           )}
+        </AnimatePresence>
 
-          {/* Center Play overlay */}
-          <AnimatePresence>
-            {!isPlaying && !isLoading && !loadError && (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                onClick={handlePlayPause}
-                className="absolute inset-0 flex items-center justify-center bg-black/35 z-20 cursor-pointer"
-              >
-                <div className="w-20 h-20 bg-[#3B82F6] rounded-full flex items-center justify-center shadow-3xl hover:scale-110 active:scale-95 transition-all border-4 border-white/20">
-                  <Play className="w-8 h-8 text-white fill-white ml-1" />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        <AnimatePresence>
+          {showControls && !error && !compatMode && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="absolute inset-x-0 bottom-0 z-30 flex flex-col justify-end bg-gradient-to-t from-black/95 via-black/50 to-transparent px-3 pb-3 pt-12 sm:px-5 sm:pb-5"
+            >
+              <input
+                type="range"
+                min={0}
+                max={duration || 0}
+                value={currentTime}
+                onChange={(e) => {
+                  const t = Number(e.target.value);
+                  if (videoRef.current) videoRef.current.currentTime = t;
+                  setCurrentTime(t);
+                }}
+                className="mb-3 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/20 accent-blue-500 hover:h-2 hover:bg-white/30"
+                aria-label="Seek"
+              />
 
-          {/* Custom controls bar */}
-          <AnimatePresence>
-            {showControls && !loadError && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 15 }}
-                className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/95 via-black/50 to-transparent flex flex-col gap-4 z-30 pt-16"
-              >
-                {/* Scrubbing timeline */}
-                <div className="flex items-center w-full">
-                  <input
-                    type="range"
-                    min={0}
-                    max={duration || 100}
-                    value={currentTime}
-                    onChange={handleProgressScrub}
-                    className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-white/25 focus:outline-none transition-all accent-[#3B82F6] hover:h-2"
-                    style={{
-                      background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${
-                        duration > 0 ? (currentTime / duration) * 100 : 0
-                      }%, rgba(255,255,255,0.2) ${
-                        duration > 0 ? (currentTime / duration) * 100 : 0
-                      }%, rgba(255,255,255,0.2) 100%)`
+              <div className="flex flex-wrap items-center gap-1.5 text-white sm:gap-2.5">
+                <button onClick={handlePlayPause} className="rounded-lg p-2 hover:bg-white/10" aria-label="Play pause">
+                  {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 fill-current" />}
+                </button>
+                <button onClick={() => seek(-10)} className="rounded-lg p-2 hover:bg-white/10" aria-label="Skip backward"><SkipBack className="h-5 w-5" /></button>
+                <button onClick={() => seek(10)} className="rounded-lg p-2 hover:bg-white/10" aria-label="Skip forward"><SkipForward className="h-5 w-5" /></button>
+                <button onClick={retryFromStart} className="rounded-lg p-2 hover:bg-white/10" aria-label="Retry stream"><RotateCcw className="h-4.5 w-4.5" /></button>
+
+                <button onClick={toggleMute} className="rounded-lg p-2 hover:bg-white/20 hover:text-blue-400 transition" aria-label="Mute">
+                  {isMuted ? <VolumeX className="h-5 w-5 text-red-400" /> : <Volume2 className="h-5 w-5" />}
+                </button>
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={isMuted ? 0 : volume}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    setVolume(v);
+                    if (videoRef.current) {
+                      videoRef.current.volume = v;
+                      videoRef.current.muted = v === 0;
+                    }
+                    setIsMuted(v === 0);
+                  }}
+                  className="hidden h-1.5 w-16 cursor-pointer appearance-none rounded-full bg-white/20 accent-white hover:bg-white/30 sm:block sm:w-20"
+                  aria-label="Volume"
+                />
+
+                <span className="text-[11px] font-semibold text-slate-200 sm:text-xs">{format(currentTime)} / {format(duration)}</span>
+
+                <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+                  <button
+                    onClick={() => setSubtitlesEnabled((prev) => !prev)}
+                    className={`rounded-lg p-2 transition ${subtitlesEnabled ? 'bg-blue-600/80 text-white' : 'hover:bg-white/20 hover:text-blue-400'}`}
+                    aria-label="Toggle subtitles"
+                  >
+                    <Captions className="h-5 w-5" />
+                  </button>
+
+                  <select
+                    value={playbackRate}
+                    onChange={(e) => {
+                      const rate = Number(e.target.value);
+                      setPlaybackRate(rate);
+                      if (videoRef.current) videoRef.current.playbackRate = rate;
                     }}
-                  />
+                    className="rounded-lg border border-white/20 bg-black/30 px-2 py-1 text-[11px] sm:text-xs"
+                    aria-label="Playback speed"
+                  >
+                    {PLAYBACK_SPEEDS.map((rate) => <option key={rate} value={rate}>{rate}x</option>)}
+                  </select>
+
+                  <select
+                    value={quality}
+                    onChange={(e) => setQuality(e.target.value)}
+                    className="rounded-lg border border-white/20 bg-black/30 px-2 py-1 text-[11px] sm:text-xs"
+                    aria-label="Quality"
+                  >
+                    {QUALITY_OPTIONS.map((q) => <option key={q.value} value={q.value}>{q.label}</option>)}
+                  </select>
+
+                  <button onClick={async () => {
+                    if (!videoRef.current || !document.pictureInPictureEnabled) return;
+                    if (document.pictureInPictureElement) await document.exitPictureInPicture();
+                    else await videoRef.current.requestPictureInPicture();
+                  }} className="rounded-lg p-2 hover:bg-white/10" aria-label="Picture in picture"><PictureInPicture2 className="h-5 w-5" /></button>
+
+                  <button onClick={() => setIsMini((prev) => !prev)} className="rounded-lg p-2 hover:bg-white/10" aria-label="Mini player">
+                    {isMini ? <X className="h-5 w-5" /> : <Minimize2 className="h-5 w-5" />}
+                  </button>
+
+                  <button onClick={toggleFullscreen} className="rounded-lg p-2 hover:bg-white/10" aria-label="Fullscreen">
+                    {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+                  </button>
                 </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-                <div className="flex items-center justify-between">
-                  {/* Left Controls */}
-                  <div className="flex items-center gap-4 text-white">
-                    <button onClick={handlePlayPause} className="p-2 hover:text-[#3B82F6] transition-colors active:scale-95">
-                      {isPlaying ? <Pause className="w-5 h-5 fill-white" /> : <Play className="w-5 h-5 fill-white" />}
-                    </button>
-                    <button onClick={() => {
-                      if (videoRef.current) {
-                        videoRef.current.currentTime = 0;
-                        videoRef.current.play().catch(e => console.log(e));
-                        setIsPlaying(true);
-                      }
-                    }} className="p-2 hover:text-[#3B82F6] transition-colors active:scale-95">
-                      <RotateCcw className="w-4 h-4" />
-                    </button>
-                    <span className="text-xs font-bold text-slate-300">
-                      {formatTime(currentTime)} <span className="text-slate-500 mx-1">/</span> {formatTime(duration)}
-                    </span>
-                  </div>
-
-                  {/* Right Controls */}
-                  <div className="flex items-center gap-5 text-white">
-                    {/* Volume Bar */}
-                    <div className="flex items-center gap-1 group/volume">
-                      <button onClick={toggleMute} className="p-2 hover:text-[#3B82F6] transition-colors">
-                        {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                      </button>
-                      <input
-                        type="range"
-                        min={0}
-                        max={1}
-                        step={0.05}
-                        value={isMuted ? 0 : volume}
-                        onChange={handleVolumeChange}
-                        className="w-0 opacity-0 group-hover/volume:w-16 group-hover/volume:opacity-100 h-1 rounded-full appearance-none cursor-pointer bg-white/20 focus:outline-none transition-all accent-white"
-                      />
-                    </div>
-
-                    {/* Speed selection */}
-                    <div className="relative group/speed py-1">
-                      <button className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-white/10 px-3 py-1.5 rounded-lg hover:bg-white/20 transition-all">
-                        <Settings className="w-3.5 h-3.5" />
-                        {playbackRate === 1 ? 'Normal' : `${playbackRate}x`}
-                      </button>
-                      <div className="absolute bottom-full right-0 mb-2 w-24 bg-slate-950/95 border border-white/10 shadow-2xl rounded-xl py-1 opacity-0 invisible group-hover/speed:opacity-100 group-hover/speed:visible transition-all flex flex-col overflow-hidden">
-                        {[0.5, 1, 1.5, 2].map((rate) => (
-                          <button
-                            key={rate}
-                            onClick={() => handleSpeedChange(rate)}
-                            className={`px-4 py-2 text-left text-xs font-bold hover:bg-[#3B82F6] hover:text-white transition-colors ${
-                              playbackRate === rate ? 'text-[#3B82F6]' : 'text-slate-300'
-                            }`}
-                          >
-                            {rate === 1 ? 'Normal' : `${rate}x`}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Fullscreen control */}
-                    <button onClick={toggleFullscreen} className="p-2 hover:text-[#3B82F6] transition-colors">
-                      {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
-
-      {/* Error Overlay */}
-      {loadError && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-8 bg-[#0f172a] text-center z-40 border border-red-500/20">
-          <div className="bg-red-500/10 p-5 rounded-2xl text-red-500 mb-4 border border-red-500/25">
-            <AlertCircle className="w-12 h-12" />
+        {error && (
+          <div className="absolute inset-0 z-40 grid place-items-center bg-slate-950/95 p-6 text-center">
+            <div className="w-full max-w-3xl rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-red-200 sm:p-8">
+              <AlertCircle className="mx-auto h-10 w-10" />
+              <p className="mt-3 text-sm font-semibold sm:text-lg">{errorMessage}</p>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                <button onClick={retryFromStart} className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white">
+                  Retry Playback
+                </button>
+                {originalUrl && (
+                  <a href={originalUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold underline">
+                    Open original source
+                  </a>
+                )}
+              </div>
+            </div>
           </div>
-          <h4 className="text-lg font-black text-white uppercase tracking-tight">Stream Access Restricted</h4>
-          <p className="text-slate-400 text-xs mt-2 max-w-sm leading-relaxed">
-            The video could not be loaded directly. This occurs if permissions are private, or the link is broken.
-          </p>
-          <a
-            href={videoSrc}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-6 flex items-center gap-2 bg-[#3B82F6] hover:bg-blue-600 text-white font-bold px-6 py-3.5 rounded-xl text-xs uppercase tracking-widest shadow-xl shadow-blue-500/20 transition-all active:scale-95"
-          >
-            <span>Open in Google Drive</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
-        </div>
-      )}
+        )}
+      </div>
+
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 px-1 text-[11px] text-slate-400">
+        <span className="line-clamp-1 font-semibold">{title}</span>
+        <span>{compatMode ? 'Drive compatibility mode' : 'Shortcuts: K, M, F, N'}</span>
+      </div>
     </div>
   );
 };

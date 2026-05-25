@@ -96,7 +96,6 @@ const Navbar = () => {
               </div>
             ))}
             
-            {/* 
             <div className="pl-6">
               <Link 
                 to="/portal" 
@@ -106,16 +105,15 @@ const Navbar = () => {
                 <span>Student Portal</span>
               </Link>
             </div>
-            */}
           </div>
 
           {/* Mobile Menu Toggle */}
           <div className="lg:hidden">
             <button 
               onClick={() => setIsOpen(true)} 
-              className="text-white p-3 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all"
+              className="text-slate-800 p-3 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-slate-100 hover:border-slate-300 transition-all shadow-sm flex items-center justify-center"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-6 h-6 text-slate-800" />
             </button>
           </div>
         </div>
@@ -184,7 +182,6 @@ const Navbar = () => {
                 ))}
               </div>
 
-              {/* 
               <div className="p-8 border-t border-white/5 bg-white/[0.02]">
                 <Link 
                   to="/portal"
@@ -194,7 +191,6 @@ const Navbar = () => {
                   <span>Student Portal</span>
                 </Link>
               </div>
-              */}
             </motion.div>
           </div>
         )}

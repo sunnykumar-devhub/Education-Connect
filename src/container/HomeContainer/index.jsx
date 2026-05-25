@@ -7,6 +7,7 @@ import { BOOKS } from '../../utils/books';
 import VideoPlayer from '../../components/Video/VideoPlayer';
 import VideoCard from '../../components/Video/VideoCard';
 import { VIDEOS } from '../../data/videos';
+import { getVideoPrimarySource, getVideoSources } from '../../utils/videoUtils';
 
 const Home = () => {
   const [selectedGrade, setSelectedGrade] = useState('All');
@@ -75,18 +76,20 @@ const Home = () => {
             </p>
             
             <div className="relative max-w-3xl mx-auto group">
-              <div className="flex items-center bg-white rounded-[1.5rem] sm:rounded-[2.5rem] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all focus-within:ring-4 focus-within:ring-[#3B82F6]/20">
-                <div className="pl-6 flex items-center">
-                  <Search className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400" />
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center bg-white rounded-[1.5rem] sm:rounded-[2.5rem] p-2 gap-2 sm:gap-0 shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all focus-within:ring-4 focus-within:ring-[#3B82F6]/20">
+                <div className="flex items-center flex-1">
+                  <div className="pl-4 sm:pl-6 flex items-center">
+                    <Search className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400" />
+                  </div>
+                  <input 
+                    type="text"
+                    placeholder="Search textbooks, literature, or subjects..."
+                    className="w-full bg-transparent border-none py-3.5 sm:py-6 px-3 sm:px-4 outline-none text-slate-900 text-sm sm:text-lg font-semibold placeholder:text-slate-400"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
-                <input 
-                  type="text"
-                  placeholder="Search textbooks, literature, or subjects..."
-                  className="flex-1 bg-transparent border-none py-4 sm:py-6 px-4 outline-none text-slate-900 text-sm sm:text-lg font-semibold placeholder:text-slate-400"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button className="bg-[#3B82F6] text-white px-8 sm:px-12 py-3.5 sm:py-5 rounded-xl sm:rounded-[2rem] font-bold text-sm sm:text-base transition-all hover:bg-blue-600 active:scale-95 shadow-lg shadow-blue-500/20">
+                <button className="bg-[#3B82F6] text-white px-6 sm:px-12 py-3.5 sm:py-5 rounded-xl sm:rounded-[2rem] font-bold text-sm sm:text-base transition-all hover:bg-blue-600 active:scale-95 shadow-lg shadow-blue-500/20 flex items-center justify-center">
                   Search
                 </button>
               </div>
@@ -112,7 +115,7 @@ const Home = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-12 items-start">
           
           {/* Left Sidebar - Sticky */}
-          <aside className="lg:col-span-3 sticky top-8 h-auto lg:h-[calc(100vh-6rem)] overflow-y-auto scrollbar-hide">
+          <aside className="lg:col-span-3 lg:sticky lg:top-24 h-auto lg:h-[calc(100vh-8rem)] overflow-y-auto scrollbar-hide">
             <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200">
               <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-100">
                 <div className="bg-blue-600 p-2 rounded-lg shadow-sm">
@@ -181,10 +184,12 @@ const Home = () => {
                    </div>
                    <div className="w-full">
                       <VideoPlayer 
-                         videoSrc={featuredVideo.url} 
+                         videoSrc={getVideoPrimarySource(featuredVideo)} 
+                         videoSources={getVideoSources(featuredVideo)}
                          thumbnail={featuredVideo.thumbnail}
                          videoId={featuredVideo.id}
                          title={featuredVideo.title}
+                         originalUrl={featuredVideo.driveUrl || featuredVideo.url}
                       />
                    </div>
                 </div>
@@ -292,7 +297,7 @@ const Home = () => {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 overflow-hidden max-w-5xl w-full flex flex-col"
+                className="bg-white rounded-2xl sm:rounded-[2.5rem] shadow-2xl border border-slate-200 max-h-[90vh] sm:max-h-[95vh] max-w-5xl w-full flex flex-col overflow-y-auto custom-scrollbar"
               >
                 <div className="bg-slate-50 border-b border-slate-200 px-8 py-5 flex items-center justify-between">
                   <span className="text-[9px] font-black bg-blue-50 text-[#3B82F6] px-2.5 py-1 rounded-lg uppercase tracking-wider">{activeVideo.category}</span>
@@ -301,7 +306,14 @@ const Home = () => {
                   </button>
                 </div>
                 <div className="bg-slate-950 p-6 flex items-center justify-center">
-                  <VideoPlayer videoSrc={activeVideo.url} thumbnail={activeVideo.thumbnail} videoId={activeVideo.id} title={activeVideo.title} />
+                  <VideoPlayer
+                    videoSrc={getVideoPrimarySource(activeVideo)}
+                    videoSources={getVideoSources(activeVideo)}
+                    thumbnail={activeVideo.thumbnail}
+                    videoId={activeVideo.id}
+                    title={activeVideo.title}
+                    originalUrl={activeVideo.driveUrl || activeVideo.url}
+                  />
                 </div>
                 <div className="p-8 sm:p-10 space-y-4">
                   <h3 className="text-xl font-black text-[#0f172a] uppercase tracking-tight">{activeVideo.title}</h3>

@@ -82,7 +82,7 @@ const StudentPortalContainer = () => {
                 <motion.div 
                   key={stat.label}
                   whileHover={{ y: -5 }}
-                  className="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 flex flex-col items-center text-center"
+                  className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] shadow-xl border border-slate-100 flex flex-col items-center text-center"
                 >
                   <div className={`${stat.color} p-3 rounded-2xl mb-4 shadow-lg shadow-${stat.color.split('-')[1]}-200`}>
                     <stat.icon className="w-6 h-6 text-white" />
@@ -94,7 +94,7 @@ const StudentPortalContainer = () => {
             </div>
 
             {/* Recently Read */}
-            <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-8">
+            <div className="bg-white rounded-2xl sm:rounded-[2.5rem] shadow-xl border border-slate-100 p-5 sm:p-8">
               <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-50">
                 <div className="flex items-center gap-3">
                   <div className="bg-[#0F172A]/10 p-3 rounded-xl">
@@ -130,7 +130,7 @@ const StudentPortalContainer = () => {
             </div>
 
             {/* Premium Video Streaming Catalog Section */}
-            <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-8 sm:p-10">
+            <div className="bg-white rounded-2xl sm:rounded-[2.5rem] shadow-xl border border-slate-100 p-5 sm:p-10">
               <VideoSection />
             </div>
           </div>
@@ -138,7 +138,7 @@ const StudentPortalContainer = () => {
           {/* Right Column - Sidebar */}
           <div className="lg:col-span-4 space-y-8">
             {/* Notifications */}
-            <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-8">
+            <div className="bg-white rounded-2xl sm:rounded-[2.5rem] shadow-xl border border-slate-100 p-5 sm:p-8">
               <div className="flex items-center gap-3 mb-8">
                 <div className="bg-[#3B82F6]/10 p-3 rounded-xl">
                   <Bell className="w-6 h-6 text-[#3B82F6]" />
@@ -164,7 +164,7 @@ const StudentPortalContainer = () => {
             </div>
 
             {/* Attendance & Performance */}
-            <div className="bg-[#0f172a] rounded-[2.5rem] shadow-xl p-8 text-white relative overflow-hidden">
+            <div className="bg-[#0f172a] rounded-2xl sm:rounded-[2.5rem] shadow-xl p-6 sm:p-8 text-white relative overflow-hidden">
                <div className="absolute bottom-[-20%] right-[-10%] w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
                <div className="flex items-center justify-between mb-6">
                  <h2 className="text-lg font-black uppercase tracking-tight">My Attendance</h2>

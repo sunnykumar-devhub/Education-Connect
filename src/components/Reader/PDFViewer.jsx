@@ -11,24 +11,23 @@ const PDFViewer = ({ fileUrl, pageNumber, setPageNumber }) => {
   const [numPages, setNumPages] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [scale, setScale] = useState(() => {
-    if (window.innerWidth < 640) return 0.55;
-    if (window.innerWidth < 1024) return 0.85;
-    return 1.15;
-  });
+  const [scale, setScale] = useState(0.95);
+  const [containerWidth, setContainerWidth] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef(null);
+  const stageRef = useRef(null);
 
-  // Dynamic responsive scaling based on viewport width
+  // Dynamic responsive observer tracking actual boundaries
   useEffect(() => {
-    const handleResize = () => {
-      if (document.fullscreenElement) return;
-      if (window.innerWidth < 640) setScale(0.55);
-      else if (window.innerWidth < 1024) setScale(0.85);
-      else setScale(1.15);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    if (!stageRef.current) return;
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const width = entry.contentRect.width;
+        setContainerWidth(Math.max(280, width - (window.innerWidth < 640 ? 20 : 64)));
+      }
+    });
+    resizeObserver.observe(stageRef.current);
+    return () => resizeObserver.disconnect();
   }, []);
 
   const onDocumentLoadSuccess = useCallback(({ numPages }) => {
@@ -94,7 +93,7 @@ const PDFViewer = ({ fileUrl, pageNumber, setPageNumber }) => {
       </div>
 
       {/* Immersive Reader Stage */}
-      <div className={`relative w-full overflow-hidden transition-all duration-500 ${isFullscreen ? 'flex-1 flex items-center justify-center bg-[#0f172a]' : 'bg-white rounded-[3rem] shadow-2xl border border-slate-100 min-h-[700px]'}`}>
+      <div ref={stageRef} className={`relative w-full overflow-hidden transition-all duration-500 ${isFullscreen ? 'flex-1 flex items-center justify-center bg-[#0f172a]' : 'bg-white rounded-[3rem] shadow-2xl border border-slate-100 min-h-[700px]'}`}>
         <AnimatePresence mode="wait">
           {loading && (
             <motion.div 
@@ -146,7 +145,7 @@ const PDFViewer = ({ fileUrl, pageNumber, setPageNumber }) => {
                 >
                   <Page 
                     pageNumber={pageNumber} 
-                    scale={scale}
+                    width={containerWidth > 0 ? containerWidth * scale : undefined}
                     renderTextLayer={true}
                     renderAnnotationLayer={true}
                   />
