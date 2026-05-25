@@ -96,6 +96,7 @@ const Navbar = () => {
               </div>
             ))}
             
+            {/* 
             <div className="pl-6">
               <Link 
                 to="/portal" 
@@ -105,6 +106,7 @@ const Navbar = () => {
                 <span>Student Portal</span>
               </Link>
             </div>
+            */}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -182,6 +184,7 @@ const Navbar = () => {
                 ))}
               </div>
 
+              {/* 
               <div className="p-8 border-t border-white/5 bg-white/[0.02]">
                 <Link 
                   to="/portal"
@@ -191,6 +194,7 @@ const Navbar = () => {
                   <span>Student Portal</span>
                 </Link>
               </div>
+              */}
             </motion.div>
           </div>
         )}
