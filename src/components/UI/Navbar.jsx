@@ -98,11 +98,11 @@ const Navbar = () => {
             
             <div className="pl-6">
               <Link 
-                to="/login" 
+                to="/portal" 
                 className="group relative flex items-center gap-2 bg-[#3B82F6] text-white px-8 py-3.5 rounded-2xl font-bold text-sm transition-all hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 active:scale-95"
               >
-                <LogIn className="w-4 h-4" />
-                <span>Student Login</span>
+                <UserCircle className="w-4 h-4" />
+                <span>Student Portal</span>
               </Link>
             </div>
           </div>
@@ -184,11 +184,11 @@ const Navbar = () => {
 
               <div className="p-8 border-t border-white/5 bg-white/[0.02]">
                 <Link 
-                  to="/login"
+                  to="/portal"
                   className="w-full flex items-center justify-center gap-3 bg-[#3B82F6] text-white p-5 rounded-2xl font-bold text-sm tracking-widest hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all"
                 >
-                  <LogIn size={20} />
-                  <span>Student Portal Login</span>
+                  <UserCircle size={20} />
+                  <span>Student Portal</span>
                 </Link>
               </div>
             </motion.div>

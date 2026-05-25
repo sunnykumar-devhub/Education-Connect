@@ -27,7 +27,7 @@ const AppRoutes = () => {
     <Routes>
       <Route
         path="/login"
-        element={<AppRoute component={LoginPage} isAuthProtected={false} path="/login" />}
+        element={<AppRoute component={StudentPortalPage} isAuthProtected={false} path="/login" />}
       />
       <Route element={<LayoutWrapper />}>
         <Route
@@ -36,7 +36,7 @@ const AppRoutes = () => {
         />
         <Route
           path="/read/:id"
-          element={<AppRoute component={ReaderPage} isAuthProtected={true} path="/read/:id" />}
+          element={<AppRoute component={ReaderPage} isAuthProtected={false} path="/read/:id" />}
         />
         <Route
           path="/help"
@@ -53,7 +53,7 @@ const AppRoutes = () => {
 
         <Route
           path="/portal"
-          element={<AppRoute component={StudentPortalPage} isAuthProtected={true} path="/portal" />}
+          element={<AppRoute component={StudentPortalPage} isAuthProtected={false} path="/portal" />}
         />
         <Route
           path="/resources"
@@ -61,7 +61,7 @@ const AppRoutes = () => {
         />
         <Route
           path="/support"
-          element={<AppRoute component={SupportPage} isAuthProtected={true} path="/support" />}
+          element={<AppRoute component={SupportPage} isAuthProtected={false} path="/support" />}
         />
         <Route
           path="/faq"
