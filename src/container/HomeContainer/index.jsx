@@ -294,7 +294,7 @@ const Home = () => {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 overflow-hidden max-w-5xl w-full flex flex-col"
+                className="bg-white rounded-2xl sm:rounded-[2.5rem] shadow-2xl border border-slate-200 max-h-[90vh] sm:max-h-[95vh] max-w-5xl w-full flex flex-col overflow-y-auto custom-scrollbar"
               >
                 <div className="bg-slate-50 border-b border-slate-200 px-8 py-5 flex items-center justify-between">
                   <span className="text-[9px] font-black bg-blue-50 text-[#3B82F6] px-2.5 py-1 rounded-lg uppercase tracking-wider">{activeVideo.category}</span>

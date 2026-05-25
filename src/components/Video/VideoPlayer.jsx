@@ -178,7 +178,7 @@ const VideoPlayer = ({ videoSrc, thumbnail, videoId = 'lecture_video', title = '
         setIsHovered(false);
         if (isPlaying) setShowControls(false);
       }}
-      className={`relative w-full rounded-[2rem] overflow-hidden bg-slate-950 border border-slate-900 shadow-2xl transition-all aspect-video select-none ${
+      className={`relative w-full rounded-2xl sm:rounded-[2rem] overflow-hidden bg-slate-950 border border-slate-900 shadow-2xl transition-all aspect-video select-none ${
         isFullscreen ? 'h-screen w-screen rounded-none border-none' : ''
       }`}
     >

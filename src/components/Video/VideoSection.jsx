@@ -223,7 +223,7 @@ const VideoSection = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 30 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 overflow-hidden max-w-5xl w-full flex flex-col"
+              className="bg-white rounded-2xl sm:rounded-[2.5rem] shadow-2xl border border-slate-200 max-h-[90vh] sm:max-h-[95vh] max-w-5xl w-full flex flex-col overflow-y-auto custom-scrollbar"
             >
               {/* Theater Header controls */}
               <div className="bg-slate-50 border-b border-slate-200 px-8 py-5 flex items-center justify-between">
