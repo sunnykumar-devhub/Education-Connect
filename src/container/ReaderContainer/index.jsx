@@ -81,75 +81,98 @@ const ReaderContainer = () => {
     setCurrentPage(prev => Math.max(1, prev - 1));
   };
 
-  return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50 pt-20">
-      {/* Sidebar - Table of Contents */}
-      <motion.aside 
-        initial={false}
-        animate={{ width: isSidebarOpen ? 340 : 0 }}
-        className="bg-white border-r border-slate-200 overflow-hidden flex flex-col shadow-sm z-20 h-[calc(100vh-80px)] sticky top-20"
-      >
-        <div className="p-8 border-b border-slate-100 bg-white">
-          <button 
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-slate-500 hover:text-[#3B82F6] font-bold text-[10px] uppercase tracking-widest mb-8 transition-colors group"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Back to Library
-          </button>
-          
-          <div className="flex gap-4">
-            <img src={book.cover} alt={book.title} className="w-16 h-20 object-cover rounded-lg shadow-md border border-slate-100" />
-            <div className="flex flex-col justify-center">
-              <h4 className="font-bold text-[#0F172A] leading-tight line-clamp-2 text-sm uppercase tracking-tight">{book.title}</h4>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-[8px] font-black bg-blue-50 text-[#3B82F6] px-2 py-1 rounded uppercase">{book.grade}</span>
-                <span className="text-[8px] font-black bg-slate-50 text-slate-500 px-2 py-1 rounded uppercase">{book.subject}</span>
-              </div>
+  const renderSidebarContent = () => (
+    <div className="flex flex-col h-full bg-white">
+      <div className="p-8 border-b border-slate-100 bg-white">
+        <button 
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 text-slate-500 hover:text-[#3B82F6] font-bold text-[10px] uppercase tracking-widest mb-8 transition-colors group"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          Back to Library
+        </button>
+        
+        <div className="flex gap-4">
+          <img src={book.cover} alt={book.title} className="w-16 h-20 object-cover rounded-lg shadow-md border border-slate-100" />
+          <div className="flex flex-col justify-center">
+            <h4 className="font-bold text-[#0F172A] leading-tight line-clamp-2 text-sm uppercase tracking-tight">{book.title}</h4>
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-[8px] font-black bg-blue-50 text-[#3B82F6] px-2 py-1 rounded uppercase">{book.grade}</span>
+              <span className="text-[8px] font-black bg-slate-50 text-slate-500 px-2 py-1 rounded uppercase">{book.subject}</span>
             </div>
           </div>
         </div>
-        
-        <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-white">
-          <div className="flex items-center gap-2 px-2 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">
+      </div>
+      
+      <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-white">
+        <div className="flex items-center justify-between px-2 py-4 mb-2">
+          <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
             <List className="w-3.5 h-3.5" />
             Contents
           </div>
-          {book.chapters.map((chapter, idx) => {
-            const chapterLocked = false;
-            return (
-              <button 
-                key={chapter.id}
-                onClick={() => !chapterLocked && setCurrentPage(idx + 1)}
-                className={`w-full text-left px-5 py-4 rounded-xl text-sm font-bold transition-all border ${
-                  currentPage === idx + 1 
-                  ? 'bg-blue-50 text-[#3B82F6] border-blue-200 shadow-sm' 
-                  : chapterLocked 
-                    ? 'bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed opacity-70'
-                    : 'text-slate-700 hover:bg-slate-50 border-transparent hover:border-slate-100'
-                }`}
-              >
-                <div className="flex justify-between items-center">
-                  <span className="truncate pr-4">{idx + 1}. {chapter.title}</span>
-                  {chapterLocked && <Lock className="w-3 h-3" />}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="p-6 bg-slate-50 border-t border-slate-100 space-y-3">
-          <button className="w-full flex items-center justify-center gap-3 bg-slate-900 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10">
-            <Download className="w-4 h-4" />
-            Download Resource
-          </button>
           <button 
-            onClick={() => setIsVideosDrawerOpen(true)}
-            className="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20"
+            onClick={() => setIsSidebarOpen(false)}
+            className="lg:hidden p-1.5 hover:bg-slate-100 rounded-lg text-slate-400"
           >
-            <Film className="w-4 h-4 animate-pulse" />
-            Related Lectures ({relatedVideos.length})
+            <X className="w-4 h-4" />
           </button>
+        </div>
+        {book.chapters.map((chapter, idx) => {
+          const chapterLocked = false;
+          return (
+            <button 
+              key={chapter.id}
+              onClick={() => {
+                if (!chapterLocked) {
+                  setCurrentPage(idx + 1);
+                  if (window.innerWidth < 1024) {
+                    setIsSidebarOpen(false);
+                  }
+                }
+              }}
+              className={`w-full text-left px-5 py-4 rounded-xl text-sm font-bold transition-all border ${
+                currentPage === idx + 1 
+                ? 'bg-blue-50 text-[#3B82F6] border-blue-200 shadow-sm' 
+                : chapterLocked 
+                  ? 'bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed opacity-70'
+                  : 'text-slate-700 hover:bg-slate-50 border-transparent hover:border-slate-100'
+              }`}
+            >
+              <div className="flex justify-between items-center">
+                <span className="truncate pr-4">{idx + 1}. {chapter.title}</span>
+                {chapterLocked && <Lock className="w-3 h-3" />}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="p-6 bg-slate-50 border-t border-slate-100 space-y-3">
+        <button className="w-full flex items-center justify-center gap-3 bg-slate-900 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10">
+          <Download className="w-4 h-4" />
+          Download Resource
+        </button>
+        <button 
+          onClick={() => setIsVideosDrawerOpen(true)}
+          className="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20"
+        >
+          <Film className="w-4 h-4 animate-pulse" />
+          Related Lectures ({relatedVideos.length})
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50 pt-20">
+      {/* Sidebar - Table of Contents (Desktop inline, responsive hide/show) */}
+      <motion.aside 
+        initial={false}
+        animate={{ width: isSidebarOpen ? 340 : 0 }}
+        className="hidden lg:flex bg-white border-r border-slate-200 overflow-hidden flex-col shadow-sm z-20 h-[calc(100vh-80px)] sticky top-20"
+      >
+        <div className="w-[340px] flex-shrink-0 flex flex-col h-full">
+          {renderSidebarContent()}
         </div>
       </motion.aside>
 
@@ -250,6 +273,43 @@ const ReaderContainer = () => {
           </AnimatePresence>
         </div>
       </main>
+
+      {/* Floating Table of Contents Chapters Button */}
+      <div className="fixed bottom-6 left-6 z-[100]">
+        <button 
+          onClick={() => setIsSidebarOpen(prev => !prev)}
+          className="flex items-center gap-2.5 bg-slate-900 hover:bg-slate-800 text-white px-6 py-4 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all border border-slate-800 font-black text-[10px] sm:text-xs uppercase tracking-widest flex items-center justify-center"
+        >
+          <List className="w-4 h-4" />
+          {isSidebarOpen ? 'Hide Chapters' : 'Show Chapters'}
+        </button>
+      </div>
+
+      {/* Mobile Table of Contents Drawer */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <div className="fixed inset-0 z-[120] lg:hidden">
+            {/* Backdrop blur */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsSidebarOpen(false)}
+              className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+            />
+            {/* Drawer container */}
+            <motion.div 
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 240 }}
+              className="absolute left-0 top-0 bottom-0 w-[320px] max-w-[85%] bg-white shadow-2xl flex flex-col border-r border-slate-200"
+            >
+              {renderSidebarContent()}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Floating Related Lectures Button */}
       <div className="fixed bottom-6 right-6 z-[100]">
