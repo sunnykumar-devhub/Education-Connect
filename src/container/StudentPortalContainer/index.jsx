@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { BOOKS } from '../../utils/books';
+import VideoSection from '../../components/Video/VideoSection';
 
 const StudentPortalContainer = () => {
   // Mock student data
@@ -126,6 +127,11 @@ const StudentPortalContainer = () => {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Premium Video Streaming Catalog Section */}
+            <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-8 sm:p-10">
+              <VideoSection />
             </div>
           </div>
 
