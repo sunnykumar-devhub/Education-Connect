@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, UserCheck, Shield, HelpCircle, FileText, ArrowRight, Play } from 'lucide-react';
-import VideoPlayer from '../../components/UI/VideoPlayer';
+import VideoPlayer from '../../components/Video/VideoPlayer';
 
 const HelpCenterContainer = () => {
   const guides = [
