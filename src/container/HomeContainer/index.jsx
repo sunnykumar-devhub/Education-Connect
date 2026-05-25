@@ -7,6 +7,7 @@ import { BOOKS } from '../../utils/books';
 import VideoPlayer from '../../components/Video/VideoPlayer';
 import VideoCard from '../../components/Video/VideoCard';
 import { VIDEOS } from '../../data/videos';
+import { getVideoPrimarySource, getVideoSources } from '../../utils/videoUtils';
 
 const Home = () => {
   const [selectedGrade, setSelectedGrade] = useState('All');
@@ -183,10 +184,12 @@ const Home = () => {
                    </div>
                    <div className="w-full">
                       <VideoPlayer 
-                         videoSrc={featuredVideo.url} 
+                         videoSrc={getVideoPrimarySource(featuredVideo)} 
+                         videoSources={getVideoSources(featuredVideo)}
                          thumbnail={featuredVideo.thumbnail}
                          videoId={featuredVideo.id}
                          title={featuredVideo.title}
+                         originalUrl={featuredVideo.driveUrl || featuredVideo.url}
                       />
                    </div>
                 </div>
@@ -303,7 +306,14 @@ const Home = () => {
                   </button>
                 </div>
                 <div className="bg-slate-950 p-6 flex items-center justify-center">
-                  <VideoPlayer videoSrc={activeVideo.url} thumbnail={activeVideo.thumbnail} videoId={activeVideo.id} title={activeVideo.title} />
+                  <VideoPlayer
+                    videoSrc={getVideoPrimarySource(activeVideo)}
+                    videoSources={getVideoSources(activeVideo)}
+                    thumbnail={activeVideo.thumbnail}
+                    videoId={activeVideo.id}
+                    title={activeVideo.title}
+                    originalUrl={activeVideo.driveUrl || activeVideo.url}
+                  />
                 </div>
                 <div className="p-8 sm:p-10 space-y-4">
                   <h3 className="text-xl font-black text-[#0f172a] uppercase tracking-tight">{activeVideo.title}</h3>

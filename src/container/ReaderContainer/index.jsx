@@ -25,6 +25,7 @@ import PDFViewer from '../../components/Reader/PDFViewer';
 import { VIDEOS } from '../../data/videos';
 import VideoPlayer from '../../components/Video/VideoPlayer';
 import VideoCard from '../../components/Video/VideoCard';
+import { getVideoPrimarySource, getVideoSources } from '../../utils/videoUtils';
 
 const ReaderContainer = () => {
   const { id: bookId } = useParams();
@@ -425,7 +426,14 @@ const ReaderContainer = () => {
                 </button>
               </div>
               <div className="bg-slate-950 p-6 flex items-center justify-center">
-                <VideoPlayer videoSrc={activeVideo.url} thumbnail={activeVideo.thumbnail} videoId={activeVideo.id} title={activeVideo.title} />
+                <VideoPlayer
+                  videoSrc={getVideoPrimarySource(activeVideo)}
+                  videoSources={getVideoSources(activeVideo)}
+                  thumbnail={activeVideo.thumbnail}
+                  videoId={activeVideo.id}
+                  title={activeVideo.title}
+                  originalUrl={activeVideo.driveUrl || activeVideo.url}
+                />
               </div>
               <div className="p-8 sm:p-10 space-y-4 text-slate-900">
                 <h3 className="text-xl font-black uppercase tracking-tight">{activeVideo.title}</h3>

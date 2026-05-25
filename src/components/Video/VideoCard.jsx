@@ -1,104 +1,74 @@
-import React, { useState, useEffect } from 'react';
-import { Play, Clock, User, Eye, CheckCircle } from 'lucide-react';
+import React, { memo, useMemo } from 'react';
+import { Clock3, Eye, Play, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatVideoDuration, getVideoProgressPercentage } from '../../utils/videoUtils';
 
-const VideoCard = ({ video, onSelect }) => {
-  const [progress, setProgress] = useState(0);
+const VideoCard = ({ video, onSelect, priority = false }) => {
+  const progress = useMemo(
+    () => getVideoProgressPercentage(video.id, video.duration),
+    [video.id, video.duration]
+  );
 
-  useEffect(() => {
-    // Check cached progress from localStorage
-    const savedProgress = getVideoProgressPercentage(video.id, video.duration);
-    setProgress(savedProgress);
-  }, [video.id, video.duration]);
-
-  const isCompleted = progress >= 95;
+  const completed = progress >= 95;
 
   return (
-    <motion.div 
-      whileHover={{ y: -8 }}
+    <motion.button
+      whileHover={{ y: -6 }}
       onClick={() => onSelect(video)}
-      className="bg-white rounded-[2rem] overflow-hidden border border-slate-150 shadow-lg hover:shadow-2xl hover:shadow-blue-500/5 transition-all group cursor-pointer flex flex-col relative"
+      className="group relative w-full overflow-hidden rounded-3xl border border-slate-200 bg-white text-left shadow-sm transition-all hover:shadow-xl hover:shadow-slate-300/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+      aria-label={`Open ${video.title}`}
     >
-      {/* Thumbnail section with play state overlays */}
-      <div className="relative aspect-video w-full overflow-hidden bg-slate-900">
-        <img 
-          src={video.thumbnail} 
-          alt={video.title} 
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          loading="lazy"
+      <div className="relative aspect-video overflow-hidden bg-slate-900">
+        <img
+          src={video.thumbnail}
+          alt={video.title}
+          loading={priority ? 'eager' : 'lazy'}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
-
-        {/* Center Hover Play Overlay */}
-        <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
-          <motion.div 
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="w-14 h-14 bg-[#3B82F6] text-white rounded-full flex items-center justify-center shadow-xl border-2 border-white/20"
-          >
-            <Play className="w-5 h-5 fill-white ml-0.5" />
-          </motion.div>
-        </div>
-
-        {/* Runtimes and View counts overlays */}
-        <div className="absolute bottom-3 left-3 bg-slate-950/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-slate-200 border border-white/5 z-10 flex items-center gap-1.5">
-          <Clock className="w-3.5 h-3.5 text-[#3B82F6]" />
-          {formatVideoDuration(video.duration)}
-        </div>
-
-        <div className="absolute bottom-3 right-3 bg-slate-950/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-slate-200 border border-white/5 z-10 flex items-center gap-1.5">
-          <Eye className="w-3.5 h-3.5 text-[#3B82F6]" />
-          {video.views}
-        </div>
-
-        {/* Category Chip */}
-        <div className="absolute top-3 left-3 bg-[#3B82F6] text-white text-[8px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg z-10 shadow-lg shadow-blue-500/10">
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+        <div className="absolute left-3 top-3 rounded-full bg-blue-600/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
           {video.category}
         </div>
-
-        {/* Completed Checkmark */}
-        {isCompleted && (
-          <div className="absolute top-3 right-3 bg-green-500 text-white p-1.5 rounded-lg z-10 shadow-lg shadow-green-500/20 flex items-center justify-center">
-            <CheckCircle className="w-4 h-4" />
+        {completed && (
+          <div className="absolute right-3 top-3 rounded-full bg-emerald-500 p-1.5 text-white">
+            <CheckCircle2 className="h-4 w-4" />
           </div>
         )}
+        <div className="absolute bottom-3 left-3 flex items-center gap-3 text-[10px] font-semibold text-white">
+          <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/80 px-2 py-1">
+            <Clock3 className="h-3.5 w-3.5" />
+            {formatVideoDuration(video.duration)}
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/80 px-2 py-1">
+            <Eye className="h-3.5 w-3.5" />
+            {video.views}
+          </span>
+        </div>
+        <div className="absolute inset-0 grid place-items-center opacity-0 transition-opacity group-hover:opacity-100">
+          <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-white/90 text-blue-600 shadow-xl">
+            <Play className="h-5 w-5 fill-current" />
+          </span>
+        </div>
       </div>
 
-      {/* Progress bar under the thumbnail (Coursera style) */}
       {progress > 0 && (
-        <div className="w-full bg-slate-100 h-1.5 relative overflow-hidden">
-          <div 
-            className={`h-full transition-all duration-300 ${isCompleted ? 'bg-green-500' : 'bg-[#3B82F6]'}`} 
-            style={{ width: `${progress}%` }}
-          />
+        <div className="h-1.5 w-full bg-slate-100">
+          <div className={`h-full ${completed ? 'bg-emerald-500' : 'bg-blue-600'}`} style={{ width: `${progress}%` }} />
         </div>
       )}
 
-      {/* Course metadata card details */}
-      <div className="p-6 flex-1 flex flex-col justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-[8px] font-black bg-blue-50 text-[#3B82F6] px-2 py-1 rounded uppercase tracking-wider">{video.grade}</span>
-            <span className="text-[8px] font-black bg-slate-50 text-slate-400 px-2 py-1 rounded uppercase tracking-wider">{video.instructor.split(' ')[0]}</span>
-          </div>
-
-          <h4 className="font-black text-[#0F172A] text-sm uppercase tracking-tight leading-snug group-hover:text-[#3B82F6] transition-colors line-clamp-2">
-            {video.title}
-          </h4>
-          <p className="text-slate-400 text-[11px] font-medium mt-3 leading-relaxed line-clamp-2">
-            {video.description}
-          </p>
+      <div className="space-y-3 p-4 sm:p-5">
+        <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          <span className="rounded-full bg-blue-50 px-2 py-1 text-blue-700">{video.grade}</span>
+          <span>{video.instructor}</span>
         </div>
-
-        <div className="flex items-center gap-2.5 mt-6 pt-4 border-t border-slate-50">
-          <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-700">
-            {video.instructor.charAt(0)}
-          </div>
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{video.instructor}</span>
-        </div>
+        <h3 className="line-clamp-2 text-sm font-extrabold leading-tight text-slate-900 group-hover:text-blue-700 sm:text-base">
+          {video.title}
+        </h3>
+        <p className="line-clamp-2 text-xs text-slate-500 sm:text-sm">{video.description}</p>
       </div>
-    </motion.div>
+    </motion.button>
   );
 };
 
-export default VideoCard;
+export default memo(VideoCard);
