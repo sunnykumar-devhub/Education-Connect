@@ -78,8 +78,10 @@ const HelpCenterContainer = () => {
               </div>
               <div className="p-4 sm:p-12 flex items-center justify-center bg-slate-950">
                  <VideoPlayer 
-                    videoSrc="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4" 
+                    videoSrc="https://drive.google.com/file/d/1Cp7VqLoP8pPnye8JWBNGdl502faLCjEa/view?usp=drive_link" 
                     thumbnail="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop" 
+                    videoId="tutorial_system_nav"
+                    title="Guide: Navigating the Education Connect Library Portal"
                  />
               </div>
            </div>

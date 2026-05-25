@@ -1,14 +1,24 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { Search, Filter, BookOpen, GraduationCap, LayoutGrid, ArrowRight, Book, Layers, ShieldCheck, Zap, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Filter, BookOpen, GraduationCap, LayoutGrid, ArrowRight, Book, Layers, ShieldCheck, Zap, ChevronRight, Film, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BookCard from '../../components/BookCard';
 import { BOOKS } from '../../utils/books';
+import VideoPlayer from '../../components/Video/VideoPlayer';
+import VideoCard from '../../components/Video/VideoCard';
+import { VIDEOS } from '../../data/videos';
 
 const Home = () => {
   const [selectedGrade, setSelectedGrade] = useState('All');
   const [selectedSubject, setSelectedSubject] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeVideo, setActiveVideo] = useState(null);
+
+  const featuredVideo = useMemo(() => VIDEOS[0], []);
+
+  const handleVideoSelect = useCallback((video) => {
+    setActiveVideo(video);
+  }, []);
 
   const grades = useMemo(() => ['All', ...Array.from(new Set(BOOKS.map(m => m.grade)))], []);
   const subjects = useMemo(() => ['All', ...Array.from(new Set(BOOKS.map(m => m.subject)))], []);
@@ -155,16 +165,28 @@ const Home = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="bg-[#0f172a] bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent rounded-2xl p-8 sm:p-12 text-white relative overflow-hidden mb-8 sm:mb-12 border border-white/5"
+                className="bg-[#0f172a] bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-950 via-transparent to-transparent rounded-[2.5rem] p-8 sm:p-12 text-white relative overflow-hidden mb-8 sm:mb-12 border border-white/10 shadow-2xl"
               >
                 <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
-                <div className="relative z-10">
-                   <span className="bg-blue-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest mb-6 inline-block">Featured Material</span>
-                   <h2 className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight mb-4">Mastering Digital <br/> Literacies</h2>
-                   <p className="text-slate-300 font-medium text-base sm:text-lg max-w-md mb-8 leading-relaxed">Access our latest interactive guide for Class 10-12 students on navigating the digital academic landscape.</p>
-                   <button className="bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-sm hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all active:scale-95">
-                      Explore Now
-                   </button>
+                <div className="relative z-10 grid grid-cols-1 xl:grid-cols-2 gap-10 items-center">
+                   <div className="space-y-6">
+                      <span className="bg-blue-600 text-white text-[9px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest inline-block">Featured Lecture Lesson</span>
+                      <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight uppercase">{featuredVideo.title}</h2>
+                      <p className="text-slate-300 font-medium text-sm leading-relaxed">{featuredVideo.description}</p>
+                      <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-400 uppercase tracking-widest pt-2">
+                        <span>Instructor: {featuredVideo.instructor}</span>
+                        <span>•</span>
+                        <span>{featuredVideo.views}</span>
+                      </div>
+                   </div>
+                   <div className="w-full">
+                      <VideoPlayer 
+                         videoSrc={featuredVideo.url} 
+                         thumbnail={featuredVideo.thumbnail}
+                         videoId={featuredVideo.id}
+                         title={featuredVideo.title}
+                      />
+                   </div>
                 </div>
              </motion.div>
 
@@ -236,19 +258,59 @@ const Home = () => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-32 bg-slate-50/50 rounded-[3rem] border-4 border-dashed border-slate-100 animate-in fade-in duration-500">
-              <Search className="w-20 h-20 text-slate-200 mx-auto mb-8" />
-              <h3 className="text-2xl font-black text-[#0f172a] uppercase tracking-tight">No Resources Matching Search</h3>
-              <p className="text-slate-500 font-medium text-base mt-3 max-w-sm mx-auto">Try adjusting your filters or search term to discover more materials.</p>
-              <button 
-                onClick={resetFilters}
-                className="mt-10 bg-[#3B82F6] text-white px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl shadow-blue-500/20 hover:bg-blue-600 transition-all transform hover:scale-105"
-              >
-                Clear All Filters
-              </button>
+            <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 border-dashed col-span-full flex flex-col items-center justify-center text-slate-400">
+              <BookOpen className="w-10 h-10 mb-4 opacity-30" />
+              <p className="font-black uppercase text-[10px] tracking-widest">No Materials Found</p>
             </div>
           )}
         </div>
+      </section>
+
+      {/* Modern SaaS Video Catalog Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-24 border-t border-slate-200">
+        <div className="flex items-center gap-4 mb-12">
+          <div className="bg-[#3B82F6] p-3 rounded-2xl text-white shadow-lg shadow-blue-500/10">
+            <Film className="w-6 h-6 animate-pulse" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Interactive Video Lessons</h2>
+            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Recently Added Lecture Modules</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {VIDEOS.slice(1, 4).map(video => (
+            <VideoCard key={video.id} video={video} onSelect={handleVideoSelect} />
+          ))}
+        </div>
+
+        {/* Immersive Cinema Modal Overlay for Homepage */}
+        <AnimatePresence>
+          {activeVideo && (
+            <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 overflow-hidden max-w-5xl w-full flex flex-col"
+              >
+                <div className="bg-slate-50 border-b border-slate-200 px-8 py-5 flex items-center justify-between">
+                  <span className="text-[9px] font-black bg-blue-50 text-[#3B82F6] px-2.5 py-1 rounded-lg uppercase tracking-wider">{activeVideo.category}</span>
+                  <button onClick={() => setActiveVideo(null)} className="p-2.5 hover:bg-slate-200 rounded-xl text-slate-500 transition-colors">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="bg-slate-950 p-6 flex items-center justify-center">
+                  <VideoPlayer videoSrc={activeVideo.url} thumbnail={activeVideo.thumbnail} videoId={activeVideo.id} title={activeVideo.title} />
+                </div>
+                <div className="p-8 sm:p-10 space-y-4">
+                  <h3 className="text-xl font-black text-[#0f172a] uppercase tracking-tight">{activeVideo.title}</h3>
+                  <p className="text-slate-500 text-sm font-medium leading-relaxed">{activeVideo.description}</p>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </section>
     </div>
   );

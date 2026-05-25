@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -15,10 +15,16 @@ import {
   Bookmark,
   MessageSquare,
   FileText,
-  Home
+  Home,
+  Film,
+  Play,
+  X
 } from 'lucide-react';
 import { BOOKS } from '../../utils/books';
 import PDFViewer from '../../components/Reader/PDFViewer';
+import { VIDEOS } from '../../data/videos';
+import VideoPlayer from '../../components/Video/VideoPlayer';
+import VideoCard from '../../components/Video/VideoCard';
 
 const ReaderContainer = () => {
   const { id: bookId } = useParams();
@@ -26,6 +32,25 @@ const ReaderContainer = () => {
   const book = BOOKS.find(b => b.id === bookId);
   const [currentPage, setCurrentPage] = useState(1);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isVideosDrawerOpen, setIsVideosDrawerOpen] = useState(false);
+  const [activeVideo, setActiveVideo] = useState(null);
+
+  const relatedVideos = useMemo(() => {
+    if (!book) return [];
+    
+    // Filter by subject matching category, or matching grade
+    const filtered = VIDEOS.filter(video => 
+      video.category.toLowerCase() === book.subject.toLowerCase() ||
+      video.grade.toLowerCase() === book.grade.toLowerCase()
+    );
+
+    // If no direct matches, return general tutorial/lectures as helpful resources
+    if (filtered.length === 0) {
+      return VIDEOS.slice(0, 3);
+    }
+    
+    return filtered;
+  }, [book]);
   
   const isLocked = false;
 
@@ -113,10 +138,17 @@ const ReaderContainer = () => {
           })}
         </div>
 
-        <div className="p-6 bg-slate-50 border-t border-slate-100">
-          <button className="w-full flex items-center justify-center gap-3 bg-[#3B82F6] text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20">
+        <div className="p-6 bg-slate-50 border-t border-slate-100 space-y-3">
+          <button className="w-full flex items-center justify-center gap-3 bg-slate-900 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10">
             <Download className="w-4 h-4" />
             Download Resource
+          </button>
+          <button 
+            onClick={() => setIsVideosDrawerOpen(true)}
+            className="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20"
+          >
+            <Film className="w-4 h-4 animate-pulse" />
+            Related Lectures ({relatedVideos.length})
           </button>
         </div>
       </motion.aside>
@@ -218,6 +250,136 @@ const ReaderContainer = () => {
           </AnimatePresence>
         </div>
       </main>
+
+      {/* Floating Related Lectures Button */}
+      <div className="fixed bottom-6 right-6 z-[100]">
+        <button 
+          onClick={() => setIsVideosDrawerOpen(true)}
+          className="flex items-center gap-2.5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-6 py-4 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all border border-white/20 font-black text-[10px] sm:text-xs uppercase tracking-widest"
+        >
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
+          </span>
+          <Film className="w-4 h-4 animate-pulse" />
+          Related Lectures ({relatedVideos.length})
+        </button>
+      </div>
+
+      {/* Right Side Drawer for Related Video Lectures */}
+      <AnimatePresence>
+        {isVideosDrawerOpen && (
+          <>
+            {/* Backdrop blur */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsVideosDrawerOpen(false)}
+              className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[110]"
+            />
+            {/* Drawer container */}
+            <motion.div 
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 240 }}
+              className="fixed right-0 top-0 bottom-0 w-full sm:w-[420px] bg-slate-900 text-slate-100 z-[120] shadow-2xl flex flex-col border-l border-slate-800"
+            >
+              {/* Header */}
+              <div className="p-6 border-b border-slate-850 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-600 p-2 rounded-xl text-white">
+                    <Film className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-sm uppercase tracking-tight text-white">Related Lectures</h3>
+                    <p className="text-[10px] font-bold text-[#3B82F6] uppercase tracking-widest mt-0.5">{book.subject} Curriculum</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsVideosDrawerOpen(false)}
+                  className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Related Videos List */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {relatedVideos.map((video) => (
+                  <div 
+                    key={video.id}
+                    onClick={() => setActiveVideo(video)}
+                    className="bg-slate-850 hover:bg-slate-800/80 rounded-2xl p-4 border border-slate-800 hover:border-blue-500/50 transition-all cursor-pointer group flex gap-4"
+                  >
+                    <div className="relative aspect-video w-24 bg-slate-950 rounded-xl overflow-hidden flex-shrink-0">
+                      <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/45 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Play className="w-5 h-5 text-white fill-white" />
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <span className="text-[8px] font-black bg-blue-900/40 text-blue-400 px-2 py-0.5 rounded uppercase tracking-wider">
+                        {video.grade}
+                      </span>
+                      <h4 className="text-white font-bold text-xs uppercase tracking-tight line-clamp-2 leading-snug group-hover:text-blue-400 transition-colors">
+                        {video.title}
+                      </h4>
+                      <p className="text-slate-400 text-[10px] font-medium truncate font-semibold">
+                        {video.instructor}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Footer info message */}
+              <div className="p-6 bg-slate-950 border-t border-slate-850 text-center">
+                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+                  Interactive Video Hub • Education Connect
+                </p>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Immersive Cinema Modal Overlay for Textbook Reader */}
+      <AnimatePresence>
+        {activeVideo && (
+          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 overflow-hidden max-w-5xl w-full flex flex-col"
+            >
+              <div className="bg-slate-50 border-b border-slate-200 px-8 py-5 flex items-center justify-between text-slate-900">
+                <div className="flex items-center gap-3">
+                  <span className="text-[9px] font-black bg-blue-50 text-[#3B82F6] px-2.5 py-1 rounded-lg uppercase tracking-wider">{activeVideo.category}</span>
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">{activeVideo.grade}</span>
+                </div>
+                <button onClick={() => setActiveVideo(null)} className="p-2.5 hover:bg-slate-200 rounded-xl text-slate-500 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="bg-slate-950 p-6 flex items-center justify-center">
+                <VideoPlayer videoSrc={activeVideo.url} thumbnail={activeVideo.thumbnail} videoId={activeVideo.id} title={activeVideo.title} />
+              </div>
+              <div className="p-8 sm:p-10 space-y-4 text-slate-900">
+                <h3 className="text-xl font-black uppercase tracking-tight">{activeVideo.title}</h3>
+                <p className="text-slate-500 text-sm font-medium leading-relaxed">{activeVideo.description}</p>
+                <div className="flex items-center gap-2 pt-2 border-t border-slate-100 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                  <span>Instructor: {activeVideo.instructor}</span>
+                  <span>•</span>
+                  <span>{activeVideo.views}</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
