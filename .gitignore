@@ -38,6 +38,8 @@ build/config.gypi
 # Feedback/dependency locks
 package-lock.json.backup
 npm-shrinkwrap.json
+package-lock.json
+
 
 # Dependency directories
 node_modules/
